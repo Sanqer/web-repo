@@ -1,0 +1,55 @@
+body div {
+    position: absolute;
+    border: black solid 1px;
+}
+
+.interface {
+    top: 1px;
+    left: 1px;
+    width: 100%;
+    height: 10%;
+}
+
+.scene {
+    top: 10%;
+    left: 1px;
+    width: 100%;
+    height: 90%;
+}
+
+
+.game {
+    left: 100px;
+    top: 10px;
+    width: 500px;
+    height: 800px;
+}
+
+.enemy {
+    width: 50px;
+    height: 50px;
+}
+
+.hero {
+    left: 10px;
+    top: 10px;
+    width: 50px;
+    height: 50px;
+}
+
+.bullet {
+    left: 10px;
+    top: 100px;
+    width: 5px;
+    height: 5px;
+}
+
+p.score {
+    float: left;
+    padding-left: 10px;
+}
+
+p.info {
+    float: right;
+    padding-right: 10px;
+}
