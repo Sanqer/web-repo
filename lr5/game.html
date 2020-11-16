@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Ease Space Invaders</title>
+    <link href="assets/css/style.css" rel="stylesheet">
+    <script src="js/spaceModel.js" defer></script>
+    <script src="js/spaceView.js" defer></script>
+    <script src="js/spaceController.js" defer></script>
+</head>
+<body>
+    <div class="game">
+        <div class="interface">
+            <p class="score"></p>
+            <p class="info"></p>
+        </div>
+        <svg class="scene" width="500" height="720"
+             viewBox="0 0 500 720"
+             xmlns="http://www.w3.org/2000/svg">
+            <defs>
+                <linearGradient id="grad1">
+                    <stop offset="0%" stop-color="magenta"/>
+                    <stop offset="50%" stop-color="blue"/>
+                    <stop offset="100%" stop-color="red"/>
+                </linearGradient>
+            </defs>
+        </svg>
+    </div>
+</body>
+</html>
