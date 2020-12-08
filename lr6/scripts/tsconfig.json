@@ -3,6 +3,7 @@
     "strict": true,
     "noEmitOnError": true,
     "removeComments": false,
-    "target": "ES6"
+    "target": "ES6",
+    "sourceMap": true
   }
 }

@@ -7,33 +7,39 @@ export class MusicStorage {
     index: number;
 
     constructor() {
-        this.index = 0;
+        this.index = -1;
         this.files = [];
         this.input = Dom.select('input[name="musicChooser"]');
         this.placeHolder = Dom.select('#playlist');
         this.input.addEventListener('change', this.onFileInputChange.bind(this));
     }
 
+    async prev(this: MusicStorage): Promise<[File, ArrayBuffer] | null> {
+        --this.index;
+        return await this.load();
+    }
+
     async next(this: MusicStorage): Promise<[File, ArrayBuffer] | null> {
+        ++this.index;
+        return await this.load();
+    }
+
+    private async load(this: MusicStorage): Promise<[File, ArrayBuffer] | null> {
         if (this.files.length === 0) {
             return null;
         }
-        if (this.index >= this.files.length) {
+        if (this.index >= this.files.length || this.index < 0) {
             this.index = 0;
         }
 
         try {
-            let file = this.files[this.index++][1];
+            let file = this.files[this.index][1];
             let arrayBuffer = await MusicStorage.readFileAsync(file);
             return [file, arrayBuffer];
         } catch (e) {
             console.error(e);
             return null;
         }
-    }
-
-    getFile(this: MusicStorage): File {
-        return this.input.files![0];
     }
 
     private onFileInputChange(this: MusicStorage, e: Event): void {
@@ -44,8 +50,13 @@ export class MusicStorage {
         }
 
         this.files = [];
+        this.index = -1;
         this.placeHolder.innerHTML = "";
         for (let file of files) {
+            let type = file.type;
+            if (type !== 'audio/mpeg' && type !== 'audio/ogg' && type !== 'audio/aac') {
+                continue;
+            }
             let pos = this.files.length;
             this.files.push([pos, file]);
             this.placeHolder.appendChild(this.makeItem(file, pos));
