@@ -12,6 +12,7 @@ class MyClass {
     offset: number;
     playPressedTime?: number;
     duration: number;
+    timelinePressed: boolean;
 
     constructor(private musicStorage: MusicStorage) {
         this.context = new AudioContext();
@@ -23,13 +24,16 @@ class MyClass {
         this.playing = false;
         this.offset = 0;
         this.duration = 0;
+        this.timelinePressed = false;
 
         let playButton = Dom.select<HTMLButtonElement>('button#play');
         playButton.addEventListener('click', async () => {
             await this.playPressedHandler();
         });
-        let timelineInput = Dom.select('input[name="timeline"]');
+        let timelineInput = Dom.select<HTMLInputElement>('input[name="timeline"]');
         timelineInput.addEventListener('change', this.onTimelineChangeHandler.bind(this));
+        timelineInput.addEventListener('mousedown', () => this.timelinePressed = true);
+        timelineInput.addEventListener('mouseup', () => this.timelinePressed = false);
 
         let volumeInput = Dom.select('input[name="volume"]');
         volumeInput.addEventListener('change', this.onVolumeChangeHandler.bind(this));
@@ -48,7 +52,7 @@ class MyClass {
 
         document.body.addEventListener('keydown', this.onKeyDownHandler.bind(this));
 
-        setInterval(this.onTimerHandler.bind(this), 1000);
+        setTimeout(this.onTimerHandler.bind(this), 100);
     }
 
     private async load(this: MyClass, musicGetter: () => Promise<[File, ArrayBuffer] | null>): Promise<boolean> {
@@ -130,6 +134,7 @@ class MyClass {
             time = (nowTime - (this.playPressedTime ?? nowTime)) / 1000 + this.offset;
             if (time > this.duration) {
                 await this.onEndHandler();
+                time = 0;
             }
         } else {
             time = this.offset;
@@ -138,7 +143,11 @@ class MyClass {
         Dom.select<HTMLElement>('#time').innerText =
             MyClass.toBeautyTime(time) + '/' + MyClass.toBeautyTime(this.duration);
         let percent = (time / this.duration) * 100;
-        Dom.select<HTMLInputElement>('input[name="timeline"]').value = percent.toFixed().toString();
+        if (!this.timelinePressed) {
+            Dom.select<HTMLInputElement>('input[name="timeline"]').value =
+                (isNaN(percent) ? 0 : percent).toFixed().toString();
+        }
+        setTimeout(this.onTimerHandler.bind(this), 100);
     }
 
     private onTimelineChangeHandler(this: MyClass): void {
@@ -210,11 +219,11 @@ class MyClass {
                 break;
             }
             case 'KeyB': {
-                await this.onRewind();
+                this.onRewind();
                 break;
             }
             case 'KeyN': {
-                await this.onFastForward();
+                this.onFastForward();
                 break;
             }
             case 'KeyM': {
