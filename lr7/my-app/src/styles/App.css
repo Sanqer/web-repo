@@ -1,0 +1,12 @@
+.App {
+  text-align: center;
+}
+
+.mapContainer {
+  position: absolute;
+  z-index: -1;
+}
+
+.mapOverlay {
+  z-index: 1;
+}
