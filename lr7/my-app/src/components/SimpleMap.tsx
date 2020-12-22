@@ -1,9 +1,5 @@
 import React from "react";
-
-interface CityCoords {
-    lon: number;
-    lat: number;
-}
+import {CityCoords} from "../interfaces";
 
 interface IState {
     imgUrl?: string
@@ -34,7 +30,7 @@ export class SimpleMap extends React.Component<CityCoords, IState> {
     render() {
         return (
             <div className={"mapContainer"}>
-                {this.state.imgUrl != null && <img src={this.state.imgUrl} alt={"map"}/>}
+                {this.state.imgUrl && <img src={this.state.imgUrl} alt={"map"}/>}
             </div>
         )
     }
