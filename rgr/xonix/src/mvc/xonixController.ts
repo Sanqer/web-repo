@@ -8,8 +8,11 @@ export default class XonixController {
     }
 
     init(this: XonixController): void {
-        this.xonixModel.init(this.onRenderCallback.bind(this));
-        this.xonixView.init(this.onKeyEventCallback.bind(this));
+        let width = 64;
+        let height = 46;
+        let cellSize = 10;
+        this.xonixModel.init({width, height}, this.onRenderCallback.bind(this));
+        this.xonixView.init({width, height, cellSize}, this.onKeyEventCallback.bind(this));
     }
 
     private onKeyEventCallback(this: XonixController, e: XonixKeyEvent): void {

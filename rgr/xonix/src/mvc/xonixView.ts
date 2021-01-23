@@ -1,9 +1,18 @@
-import {SceneDto, XonixKeyEvent} from "../dtos";
-import {KeyAction, KeyCodes, KeyValue} from "../constants";
+import {GameObjectDto, SceneDto, ViewInitInfo, XonixKeyEvent} from "../dtos";
+import {CellType, KeyAction, KeyCodes, KeyValue} from "../constants";
 
 export default class XonixView {
     private ctx: CanvasRenderingContext2D;
     private keyActionCallback: ((xonixKeyEvent: XonixKeyEvent) => void) | undefined;
+
+    private cellSize: number;
+    private xonixColor: string;
+    private ballsColor: string;
+    private squareColor: string;
+
+    private waterColor: string;
+    private groundColor: string;
+    private traceColor: string;
 
     constructor() {
         let canvas = document.querySelector<HTMLCanvasElement>('#myCanvas');
@@ -11,20 +20,29 @@ export default class XonixView {
             throw new Error('no Canvas there');
         }
 
-        canvas.width = 640;
-        canvas.height = 460;
-
         let nullableCtx = canvas.getContext('2d');
         if (nullableCtx == null) {
             throw new Error('Canvas has no 2d context');
         }
         this.ctx = nullableCtx;
+
+        this.cellSize = 0;
+        this.xonixColor = "#000000";
+        this.ballsColor = "#216111";
+        this.squareColor = "#767676";
+        this.waterColor = "#158580";
+        this.groundColor = "#AAAAAA";
+        this.traceColor = "#00FFFF";
     }
 
-    init(this: XonixView, keyActionCallback: (xonixKeyEvent: XonixKeyEvent) => void): void {
+    init(this: XonixView, initInfo: ViewInitInfo, keyActionCallback: (xonixKeyEvent: XonixKeyEvent) => void): void {
         this.keyActionCallback = keyActionCallback;
         document.addEventListener("keydown", this.onKeyDownEvent.bind(this));
         document.addEventListener("keyup", this.onKeyUpEvent.bind(this));
+
+        this.ctx.canvas.width = initInfo.width * initInfo.cellSize;
+        this.ctx.canvas.height = initInfo.height * initInfo.cellSize;
+        this.cellSize = initInfo.cellSize;
 
         this.ctx.fillStyle = "#000000";
         this.ctx.fillRect(0, 0, 10, 10);
@@ -36,6 +54,50 @@ export default class XonixView {
 
     render(this: XonixView, scene: SceneDto): void {
         console.log("i am render: ", JSON.stringify(scene));
+        this.clearScene();
+
+        let x = 0;
+        let y = 0;
+        for (let row of scene.field.cells) {
+            for (let cell of row) {
+                switch (cell) {
+                    case CellType.LAND: {
+                        this.drawRect({x, y}, this.groundColor);
+                        break;
+                    }
+                    case CellType.WATER: {
+                        this.drawRect({x, y}, this.waterColor);
+                        break;
+                    }
+                    case CellType.TRACK: {
+                        this.drawRect({x, y}, this.traceColor);
+                        break;
+                    }
+                    default: {
+                        break;
+                    }
+                }
+                ++y;
+            }
+            ++x;
+            y = 0;
+        }
+
+        this.drawRect(scene.xonix, this.xonixColor);
+        /*this.drawRect(scene.square, this.squareColor);
+        for (let ball of scene.balls) {
+            this.drawRect(ball, this.ballsColor);
+        }*/
+    }
+
+    private clearScene(this: XonixView): void {
+        this.ctx.fillStyle = "#FFFFFF";
+        this.ctx.fillRect(0, 0, this.ctx.canvas.width, this.ctx.canvas.height);
+    }
+
+    private drawRect(this: XonixView, gameObject: GameObjectDto, color: string): void {
+        this.ctx.fillStyle = color;
+        this.ctx.fillRect(gameObject.x * this.cellSize, gameObject.y * this.cellSize, this.cellSize, this.cellSize);
     }
 
     private onKeyDownEvent(this: XonixView, e: KeyboardEvent): void {
