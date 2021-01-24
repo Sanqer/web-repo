@@ -14,6 +14,8 @@ export default class XonixView {
     private groundColor: string;
     private traceColor: string;
 
+    private infoHeight: number;
+
     constructor() {
         let canvas = document.querySelector<HTMLCanvasElement>('#myCanvas');
         if (canvas == null) {
@@ -33,6 +35,8 @@ export default class XonixView {
         this.waterColor = "#158580";
         this.groundColor = "#AAAAAA";
         this.traceColor = "#00FFFF";
+
+        this.infoHeight = 35;
     }
 
     init(this: XonixView, initInfo: ViewInitInfo, keyActionCallback: (xonixKeyEvent: XonixKeyEvent) => void): void {
@@ -41,7 +45,7 @@ export default class XonixView {
         document.addEventListener("keyup", this.onKeyUpEvent.bind(this));
 
         this.ctx.canvas.width = initInfo.width * initInfo.cellSize;
-        this.ctx.canvas.height = initInfo.height * initInfo.cellSize;
+        this.ctx.canvas.height = initInfo.height * initInfo.cellSize + this.infoHeight;
         this.cellSize = initInfo.cellSize;
 
         this.ctx.fillStyle = "#000000";
@@ -49,6 +53,8 @@ export default class XonixView {
 
         this.ctx.strokeStyle = "#000000";
         this.ctx.strokeRect(0, 0, this.ctx.canvas.width, this.ctx.canvas.height);
+
+        this.ctx.font = "20px Verdana";
     }
 
 
@@ -85,8 +91,22 @@ export default class XonixView {
         this.drawRect(scene.xonix, this.xonixColor);
         this.drawRect(scene.square, this.squareColor);
         for (let ball of scene.balls) {
-            this.drawRect(ball, this.ballsColor);
+            this.fillCircle(ball, this.ballsColor);
         }
+
+        let footerLine = this.ctx.canvas.height - this.infoHeight;
+        let textLine = footerLine + 26;
+
+        this.ctx.fillStyle = "#000000";
+        this.ctx.fillText("Score: " + scene.score, this.ctx.canvas.width * 0.15, textLine);
+        this.ctx.fillText("Xn: " + scene.lifeCount, this.ctx.canvas.width * 0.45, textLine);
+        this.ctx.fillText("Full: " + Math.round(scene.percentage) + "%", this.ctx.canvas.width * 0.75, textLine);
+
+        this.ctx.strokeStyle = "#000000";
+        this.ctx.beginPath();
+        this.ctx.moveTo(0, footerLine);
+        this.ctx.lineTo(this.ctx.canvas.width, footerLine);
+        this.ctx.stroke();
     }
 
     private clearScene(this: XonixView): void {
@@ -97,6 +117,18 @@ export default class XonixView {
     private drawRect(this: XonixView, gameObject: GameObjectDto, color: string): void {
         this.ctx.fillStyle = color;
         this.ctx.fillRect(gameObject.x * this.cellSize, gameObject.y * this.cellSize, this.cellSize, this.cellSize);
+    }
+
+    private fillCircle(this: XonixView, gameObject: GameObjectDto, color: string): void {
+        let r = this.cellSize / 2;
+        let x = (gameObject.x * this.cellSize) + r;
+        let y = (gameObject.y * this.cellSize) + r;
+
+        console.log("x, y, r: " + x + ", " + y + ", " + r);
+        this.ctx.fillStyle = color;
+        this.ctx.beginPath();
+        this.ctx.arc(x, y, r, 0, 2 * Math.PI);
+        this.ctx.fill();
     }
 
     private onKeyDownEvent(this: XonixView, e: KeyboardEvent): void {
