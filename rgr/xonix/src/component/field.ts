@@ -1,4 +1,5 @@
 import {CellType} from "../constants";
+import BallsEnemy from "./ballsEnemy";
 
 export default class Field {
     private readonly waterArea;
@@ -12,7 +13,7 @@ export default class Field {
     constructor(width: number, height: number) {
         this.width = width;
         this.height = height;
-        this.waterArea = (this.width - 4) * (this.height - 4);
+        this.waterArea = (this.width - 10) * (this.height - 10);
 
         this.field = new Array(this.width);
         for (let i = 0; i < this.width; ++i) {
@@ -24,14 +25,14 @@ export default class Field {
     init(this: Field): void {
         for (let y = 0; y < this.height; y++) {
             for (let x = 0; x < this.width; x++) {
-                this.field[x][y] = (x < 2 || x > this.width - 3 || y < 2 || y > this.height - 3) ? CellType.LAND : CellType.WATER;
+                this.field[x][y] = (x < 5 || x > this.width - 6 || y < 5 || y > this.height - 6) ? CellType.LAND : CellType.WATER;
             }
         }
         this.currentWaterArea = this.waterArea;
     }
 
     getColor(this: Field, x: number, y: number): CellType {
-        if (x < 0 || y < 0 || x > this.width - 1 || y > this.height - 1) return CellType.WATER;
+        if (x < 0 || y < 0 || x > this.width - 1 || y > this.height - 1) return CellType.WATER; //todo: check on this one
         return this.field[x][y];
     }
 
@@ -47,7 +48,7 @@ export default class Field {
         return 100 - this.currentWaterArea / this.waterArea * 100;
     }
 
-    clearTrack(this: Field): void { // clear track of Xonix
+    clearTrack(this: Field): void {
         for (let y = 0; y < this.height; y++)
             for (let x = 0; x < this.width; x++)
                 if (this.field[x][y] == CellType.TRACK) this.field[x][y] = CellType.WATER;
@@ -57,7 +58,7 @@ export default class Field {
         if (this.field[x][y] !== CellType.WATER) {
             return;
         }
-        this.field[x][y] = CellType.TEMP; // filling temporary color
+        this.field[x][y] = CellType.TEMP;
         for (let dx = -1; dx < 2; dx++) {
             for (let dy = -1; dy < 2; dy++) {
                 this.fillTemporary(x + dx, y + dy);
@@ -65,9 +66,11 @@ export default class Field {
         }
     }
 
-    tryToFill(this: Field, /*balls: BallArray*/): void {
+    tryToFill(this: Field, balls: BallsEnemy): void {
         this.currentWaterArea = 0;
-        //for (Ball ball : balls.getBalls()) this.fillTemporary(ball.getX(), ball.getY());
+        for (let ball of balls.getBalls()) {
+            this.fillTemporary(ball.getX(), ball.getY());
+        }
         for (let y = 0; y < this.height; y++)
             for (let x = 0; x < this.width; x++) {
                 if (this.field[x][y] === CellType.TRACK || this.field[x][y] === CellType.WATER) {

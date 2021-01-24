@@ -3,8 +3,8 @@ import {CellType, KeyAction, KeyValue} from "./constants";
 export interface SceneDto {
     field: FieldDto,
     xonix: GameObjectDto,
-    //balls: Array<GameObjectDto>,
-    //square: GameObjectDto,
+    balls: Array<GameObjectDto>,
+    square: GameObjectDto,
 
     score: number,
     lifeCount: number,

@@ -1,5 +1,6 @@
 import Field from "./field";
 import {CellType, KeyValue} from "../constants";
+import BallsEnemy from "./ballsEnemy";
 
 export default class Xonix {
     private x: number;
@@ -40,14 +41,37 @@ export default class Xonix {
     }
 
     setDirection(this: Xonix, direction: KeyValue | null): void {
+        if (direction !== KeyValue.LEFT
+            && direction !== KeyValue.RIGHT
+            && direction !== KeyValue.UP
+            && direction !== KeyValue.DOWN
+            && direction != null) {
+            return;
+        }
         this.direction = direction;
     }
 
-    move(): void {
-        if (this.direction == KeyValue.LEFT) this.x--;
-        if (this.direction == KeyValue.RIGHT) this.x++;
-        if (this.direction == KeyValue.UP) this.y--;
-        if (this.direction == KeyValue.DOWN) this.y++;
+    getDirection(this: Xonix): KeyValue | null {
+        return this.direction;
+    }
+
+    isSelfCrossed(this: Xonix): boolean {
+        return this.isSelfCross;
+    }
+
+    move(this: Xonix, balls: BallsEnemy): void {
+        if (this.direction === KeyValue.LEFT) {
+            this.x--;
+        } else if (this.direction === KeyValue.RIGHT) {
+            this.x++;
+        } else if (this.direction === KeyValue.UP) {
+            this.y--;
+        } else if (this.direction === KeyValue.DOWN) {
+            this.y++;
+        } else {
+            return;
+        }
+
         if (this.x < 0) this.x = 0;
         if (this.y < 0) this.y = 0;
         if (this.y > this.field.height - 1) {
@@ -60,15 +84,11 @@ export default class Xonix {
         if (this.field.getColor(this.x, this.y) === CellType.LAND && this.isWater) {
             this.direction = null;
             this.isWater = false;
-            this.field.tryToFill();
+            this.field.tryToFill(balls);
         }
         if (this.field.getColor(this.x, this.y) === CellType.WATER) {
             this.isWater = true;
             this.field.setColor(this.x, this.y, CellType.TRACK);
         }
-    }
-
-    isSelfCrossed(): boolean {
-        return this.isSelfCross;
     }
 }

@@ -53,7 +53,6 @@ export default class XonixView {
 
 
     render(this: XonixView, scene: SceneDto): void {
-        console.log("i am render: ", JSON.stringify(scene));
         this.clearScene();
 
         let x = 0;
@@ -84,10 +83,10 @@ export default class XonixView {
         }
 
         this.drawRect(scene.xonix, this.xonixColor);
-        /*this.drawRect(scene.square, this.squareColor);
+        this.drawRect(scene.square, this.squareColor);
         for (let ball of scene.balls) {
             this.drawRect(ball, this.ballsColor);
-        }*/
+        }
     }
 
     private clearScene(this: XonixView): void {
