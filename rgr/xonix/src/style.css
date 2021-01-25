@@ -1,3 +1,27 @@
 body {
-    background-color: grey;
+    background-color: dimgrey;
+}
+
+#my-canvas {
+    border-radius: 2px;
+
+    float: left;
+    margin-left: 50px;
+    margin-bottom: 50px;
+}
+
+.info {
+    border-radius: 5px;
+
+    float: left;
+    margin-left: 100px;
+    padding: 10px;
+    background-color: white;
+    color: black;
+    font-family: Verdana, serif;
+    text-align: center;
+}
+
+.red {
+    color: red;
 }

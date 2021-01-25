@@ -32,7 +32,7 @@ export default class Field {
     }
 
     getColor(this: Field, x: number, y: number): CellType {
-        if (x < 0 || y < 0 || x > this.width - 1 || y > this.height - 1) return CellType.WATER; //todo: check on this one
+        if (x < 0 || y < 0 || x > this.width - 1 || y > this.height - 1) return CellType.WATER;
         return this.field[x][y];
     }
 
@@ -44,6 +44,10 @@ export default class Field {
         return this.score;
     }
 
+    clearScore(this: Field): void {
+        this.score = 0;
+    }
+
     getCurrentPercent(this: Field): number {
         return 100 - this.currentWaterArea / this.waterArea * 100;
     }
@@ -51,17 +55,17 @@ export default class Field {
     clearTrack(this: Field): void {
         for (let y = 0; y < this.height; y++)
             for (let x = 0; x < this.width; x++)
-                if (this.field[x][y] == CellType.TRACK) this.field[x][y] = CellType.WATER;
+                if (this.field[x][y] === CellType.TRACK) this.field[x][y] = CellType.WATER;
     }
 
-    fillTemporary(this: Field, x: number, y: number): void {
+    dfsBallsTerritory(this: Field, x: number, y: number): void {
         if (this.field[x][y] !== CellType.WATER) {
             return;
         }
         this.field[x][y] = CellType.TEMP;
         for (let dx = -1; dx < 2; dx++) {
             for (let dy = -1; dy < 2; dy++) {
-                this.fillTemporary(x + dx, y + dy);
+                this.dfsBallsTerritory(x + dx, y + dy);
             }
         }
     }
@@ -69,7 +73,7 @@ export default class Field {
     tryToFill(this: Field, balls: BallsEnemy): void {
         this.currentWaterArea = 0;
         for (let ball of balls.getBalls()) {
-            this.fillTemporary(ball.getX(), ball.getY());
+            this.dfsBallsTerritory(ball.getX(), ball.getY());
         }
         for (let y = 0; y < this.height; y++)
             for (let x = 0; x < this.width; x++) {

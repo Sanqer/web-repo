@@ -10,15 +10,18 @@ export default class SquareEnemy extends BasicEnemy {
     }
 
     init(this: SquareEnemy) {
+        this.y = 0;
         this.x = 1;
         this.dx = this.dy = 1;
     }
 
     updateDXAndDY(this: SquareEnemy): void {
-        if (this.field.getColor(this.x + this.dx, this.y) == CellType.WATER) {
+        let xNextColor = this.field.getColor(this.x + this.dx, this.y);
+        if (xNextColor === CellType.WATER || xNextColor === CellType.TRACK) {
             this.dx = -this.dx;
         }
-        if (this.field.getColor(this.x, this.y + this.dy) == CellType.WATER) {
+        let yNextColor = this.field.getColor(this.x, this.y + this.dy);
+        if (yNextColor === CellType.WATER || yNextColor === CellType.TRACK) {
             this.dy = -this.dy;
         }
     }

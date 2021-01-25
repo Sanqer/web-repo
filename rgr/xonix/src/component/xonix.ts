@@ -5,16 +5,18 @@ import BallsEnemy from "./ballsEnemy";
 export default class Xonix {
     private x: number;
     private y: number;
+    private countLives: number;
     private isWater: boolean;
     private isSelfCross: boolean;
     private direction: KeyValue | null;
 
-    constructor(private readonly field: Field, private countLives: number) {
+    constructor(private readonly field: Field, private defCountLives: number) {
         this.x = field.width / 2;
         this.y = 0;
         this.direction = null;
         this.isWater = false;
         this.isSelfCross = false;
+        this.countLives = defCountLives;
     }
 
     init(this: Xonix): void {
@@ -22,6 +24,10 @@ export default class Xonix {
         this.y = 0;
         this.isWater = false;
         this.isSelfCross = false;
+    }
+
+    replenishHealth(this: Xonix): void {
+        this.countLives = this.defCountLives;
     }
 
     getX(this: Xonix): number {

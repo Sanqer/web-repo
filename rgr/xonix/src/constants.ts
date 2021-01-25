@@ -7,7 +7,11 @@ export enum KeyAction {
     KEYDOWN
 }
 
-export enum KeyValue { //todo: may be remove string names for performance(?)
+export enum GameState {
+    PLAYING, INIT, PAUSED, GAME_OVER
+}
+
+export enum KeyValue {
     UP = "Up",
     DOWN = "Down",
     LEFT = "Left",

@@ -13,12 +13,19 @@ export default class BallsEnemy {
         this.add();
     }
 
+    coldInit(this: BallsEnemy): void {
+        this.balls.splice(0);
+        this.add();
+    }
+
     add(this: BallsEnemy): void {
         this.balls.push(new Ball(this.field));
     }
 
     move(this: BallsEnemy): void {
-        for (let ball of this.balls) ball.move();
+        for (let ball of this.balls) {
+            ball.move();
+        }
     }
 
     getBalls(this: BallsEnemy): Array<Ball> {
@@ -26,12 +33,14 @@ export default class BallsEnemy {
     }
 
     isHitTrackOrXonix(this: BallsEnemy, xonix: Xonix): boolean {
-        for (let ball of this.balls) if (ball.isHitTrackOrXonix(xonix)) return true;
+        for (let ball of this.balls) {
+            if (ball.isHitTrackOrXonix(xonix)) return true;
+        }
         return false;
     }
 }
 
-class Ball extends BasicEnemy{
+class Ball extends BasicEnemy {
 
     constructor(field: Field) {
         super(field);

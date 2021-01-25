@@ -1,5 +1,5 @@
-import {GameObjectDto, SceneDto, ViewInitInfo, XonixKeyEvent} from "../dtos";
-import {CellType, KeyAction, KeyCodes, KeyValue} from "../constants";
+import {GameObject, SceneInfo, ViewInitInfo, XonixKeyEvent} from "../interfaces";
+import {CellType, GameState, KeyAction, KeyCodes, KeyValue} from "../constants";
 
 export default class XonixView {
     private ctx: CanvasRenderingContext2D;
@@ -16,8 +16,8 @@ export default class XonixView {
 
     private infoHeight: number;
 
-    constructor() {
-        let canvas = document.querySelector<HTMLCanvasElement>('#myCanvas');
+    constructor(initInfo: ViewInitInfo) {
+        let canvas = document.querySelector<HTMLCanvasElement>('#my-canvas');
         if (canvas == null) {
             throw new Error('no Canvas there');
         }
@@ -28,37 +28,27 @@ export default class XonixView {
         }
         this.ctx = nullableCtx;
 
-        this.cellSize = 0;
-        this.xonixColor = "#000000";
-        this.ballsColor = "#216111";
-        this.squareColor = "#767676";
-        this.waterColor = "#158580";
-        this.groundColor = "#AAAAAA";
-        this.traceColor = "#00FFFF";
-
         this.infoHeight = 35;
-    }
-
-    init(this: XonixView, initInfo: ViewInitInfo, keyActionCallback: (xonixKeyEvent: XonixKeyEvent) => void): void {
-        this.keyActionCallback = keyActionCallback;
-        document.addEventListener("keydown", this.onKeyDownEvent.bind(this));
-        document.addEventListener("keyup", this.onKeyUpEvent.bind(this));
-
         this.ctx.canvas.width = initInfo.width * initInfo.cellSize;
         this.ctx.canvas.height = initInfo.height * initInfo.cellSize + this.infoHeight;
         this.cellSize = initInfo.cellSize;
 
-        this.ctx.fillStyle = "#000000";
-        this.ctx.fillRect(0, 0, 10, 10);
+        this.xonixColor = initInfo.xonixColor ?? "#000000";
+        this.ballsColor = initInfo.ballsColor ?? "#216111";
+        this.squareColor = initInfo.squareColor ?? "#767676";
+        this.waterColor = initInfo.waterColor ?? "#158580";
+        this.groundColor = initInfo.groundColor ?? "#AAAAAA";
+        this.traceColor = initInfo.traceColor ?? "#00FFFF";
+    }
 
-        this.ctx.strokeStyle = "#000000";
-        this.ctx.strokeRect(0, 0, this.ctx.canvas.width, this.ctx.canvas.height);
-
+    init(this: XonixView, keyActionCallback: (xonixKeyEvent: XonixKeyEvent) => void): void {
+        this.keyActionCallback = keyActionCallback;
+        document.addEventListener("keydown", this.onKeyDownEvent.bind(this));
+        document.addEventListener("keyup", this.onKeyUpEvent.bind(this));
         this.ctx.font = "20px Verdana";
     }
 
-
-    render(this: XonixView, scene: SceneDto): void {
+    render(this: XonixView, scene: SceneInfo): void {
         this.clearScene();
 
         let x = 0;
@@ -67,15 +57,15 @@ export default class XonixView {
             for (let cell of row) {
                 switch (cell) {
                     case CellType.LAND: {
-                        this.drawRect({x, y}, this.groundColor);
+                        this.fillRect({x, y}, this.groundColor);
                         break;
                     }
                     case CellType.WATER: {
-                        this.drawRect({x, y}, this.waterColor);
+                        this.fillRect({x, y}, this.waterColor);
                         break;
                     }
                     case CellType.TRACK: {
-                        this.drawRect({x, y}, this.traceColor);
+                        this.fillRect({x, y}, this.traceColor);
                         break;
                     }
                     default: {
@@ -88,8 +78,8 @@ export default class XonixView {
             y = 0;
         }
 
-        this.drawRect(scene.xonix, this.xonixColor);
-        this.drawRect(scene.square, this.squareColor);
+        this.fillRect(scene.xonix, this.xonixColor);
+        this.strokeRect(scene.square, this.squareColor);
         for (let ball of scene.balls) {
             this.fillCircle(ball, this.ballsColor);
         }
@@ -98,15 +88,47 @@ export default class XonixView {
         let textLine = footerLine + 26;
 
         this.ctx.fillStyle = "#000000";
-        this.ctx.fillText("Score: " + scene.score, this.ctx.canvas.width * 0.15, textLine);
-        this.ctx.fillText("Xn: " + scene.lifeCount, this.ctx.canvas.width * 0.45, textLine);
-        this.ctx.fillText("Full: " + Math.round(scene.percentage) + "%", this.ctx.canvas.width * 0.75, textLine);
+        if (scene.state === GameState.PLAYING || scene.state === GameState.PAUSED) {
+            this.ctx.fillText("Score: " + scene.score, this.ctx.canvas.width * 0.15, textLine);
+            this.ctx.fillText("Xn: " + scene.lifeCount, this.ctx.canvas.width * 0.45, textLine);
+            this.ctx.fillText("Full: " + Math.round(scene.percentage) + "%", this.ctx.canvas.width * 0.75, textLine);
+        } else {
+            this.ctx.fillText("Highscore: " + scene.highscore, this.ctx.canvas.width * 0.415, textLine);
+        }
 
         this.ctx.strokeStyle = "#000000";
         this.ctx.beginPath();
         this.ctx.moveTo(0, footerLine);
         this.ctx.lineTo(this.ctx.canvas.width, footerLine);
         this.ctx.stroke();
+
+        //'pause rect' and menus:
+        if (scene.state !== GameState.PLAYING) {
+            this.ctx.save();
+            this.ctx.globalAlpha = 0.8;
+            this.ctx.fillStyle = "#FFFFFF";
+            this.ctx.fillRect(0, 0, this.ctx.canvas.width, footerLine);
+            this.ctx.restore();
+
+            this.drawMenu(scene);
+        }
+    }
+
+    private drawMenu(this: XonixView, scene: SceneInfo): void {
+        this.ctx.fillStyle = "#000000";
+        if (scene.state === GameState.PAUSED) {
+            this.ctx.fillText('Press "SPACE" to Continue', this.ctx.canvas.width * 0.372, this.ctx.canvas.height / 2 - 50);
+            this.ctx.fillText('Press "R" to Restart the Game', this.ctx.canvas.width * 0.355, this.ctx.canvas.height / 2);
+        } else if (scene.state === GameState.INIT) {
+            this.ctx.fillText('Press "SPACE" to Start', this.ctx.canvas.width * 0.39, this.ctx.canvas.height / 2);
+        } else if (scene.state === GameState.GAME_OVER) {
+            if (scene.score > scene.highscore) {
+                this.ctx.fillText("New Record: " + scene.score + "!", this.ctx.canvas.width * 0.41, this.ctx.canvas.height / 2 - 50);
+            } else {
+                this.ctx.fillText("Your score: " + scene.score, this.ctx.canvas.width * 0.43, this.ctx.canvas.height / 2 - 50);
+            }
+            this.ctx.fillText('Press "SPACE" to Start the Game Again!', this.ctx.canvas.width * 0.31, this.ctx.canvas.height / 2);
+        }
     }
 
     private clearScene(this: XonixView): void {
@@ -114,17 +136,24 @@ export default class XonixView {
         this.ctx.fillRect(0, 0, this.ctx.canvas.width, this.ctx.canvas.height);
     }
 
-    private drawRect(this: XonixView, gameObject: GameObjectDto, color: string): void {
+    private fillRect(this: XonixView, gameObject: GameObject, color: string): void {
         this.ctx.fillStyle = color;
         this.ctx.fillRect(gameObject.x * this.cellSize, gameObject.y * this.cellSize, this.cellSize, this.cellSize);
     }
 
-    private fillCircle(this: XonixView, gameObject: GameObjectDto, color: string): void {
+    private strokeRect(this: XonixView, gameObject: GameObject, color: string): void {
+        this.ctx.save();
+        this.ctx.strokeStyle = color;
+        this.ctx.lineWidth = 3;
+        this.ctx.strokeRect(gameObject.x * this.cellSize, gameObject.y * this.cellSize, this.cellSize, this.cellSize);
+        this.ctx.restore();
+    }
+
+    private fillCircle(this: XonixView, gameObject: GameObject, color: string): void {
         let r = this.cellSize / 2;
         let x = (gameObject.x * this.cellSize) + r;
         let y = (gameObject.y * this.cellSize) + r;
 
-        console.log("x, y, r: " + x + ", " + y + ", " + r);
         this.ctx.fillStyle = color;
         this.ctx.beginPath();
         this.ctx.arc(x, y, r, 0, 2 * Math.PI);
@@ -151,7 +180,6 @@ export default class XonixView {
         if (this.keyActionCallback != null) {
             this.keyActionCallback(keyEvent);
         }
-        console.log("i am notifyKeyEvent, key: " + JSON.stringify(keyEvent));
     }
 
     private static getKeyValueByEvent(e: KeyboardEvent): KeyValue | null {
